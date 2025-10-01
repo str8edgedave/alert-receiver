@@ -41,8 +41,14 @@ func getEnv(key, defaultValue string) string {
 }
 
 func main() {
-	http.HandleFunc("/health", handleHealth)
+        defer func() {
+	log.Println("Exiting application.")
+	}()
 
+	http.HandleFunc("/health", handleHealth)
+	http.HandleFunc("/receiver", handleAlertReceiver)
+
+	//
 	port := getEnv("PORT", "8080")
 	host := getEnv("HOST", "127.0.0.1")
 	if host == "127.0.0.1" || host == "localhost" {
@@ -51,6 +57,7 @@ func main() {
 		log.Printf("Starting server on %s port %s", host, port)
 	}
 	log.Printf("Health endpoint: http://%s:%s/health", host, port)
+	log.Printf("Alert Receiver endpoint: http://%s:%s/receiver", host, port)
 
 	if err := http.ListenAndServe(host+":"+port, nil); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
